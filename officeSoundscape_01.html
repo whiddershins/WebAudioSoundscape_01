@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Soundscape Two A</title>
+    <style>
+			* { padding: 0; margin: 0; }
+			canvas { background: #eee; display: block; margin: 0 auto; }
+			button {
+					background-color: grey;
+					border: none;
+					color: white;
+					padding: 15px 32px;
+					text-align: center;
+					text-decoration: none;
+					display: inline-block;
+					font-size: 16px;
+					width: 200px;
+			}
+			#volumeDiv {
+					width: 150px;
+					height: 40px;
+					margin: 0;
+					transform-origin: 75px 75px;
+					transform: rotate(-90deg);
+			}
+			label {
+					font-family: sans-serif;
+					font-size: 30px;
+			}
+			a:visited {
+					color: blue;
+			}
+	</style>
+</head>
+<body>
+
+<div style="margin-bottom: 25px">
+    <audio src="music/2021_02_24_officeAmbience_ambient01a.m4a" loop="True" id="office01a"></audio>
+    <audio src="music/2021_02_24_officeAmbience_ambient01b.m4a" loop="True" id="office01b"></audio>
+    <audio src="music/2021_02_24_officeAmbience_ambient02a.m4a" loop="True" id="office02a"></audio>
+    <audio src="music/2021_02_24_officeAmbience_ambient02b.m4a" loop="True" id="office02b"></audio>
+    <audio src="music/2021_02_24_officeAmbience_ambient03.m4a" loop="True" id="office03"></audio>
+    <audio src="music/2021_02_24_officeAmbience_ambient04.m4a" loop="True" id="office04"></audio>
+    <button data-playing="false" role="switch" aria-checked="false" padding="10px" id="playPauseAudio">
+        <span id="playPauseLabel">Enable Office Sound</span>
+    </button>
+    <p/>
+</div>
+
+<div style="float:left; padding:20px;" id="volumeDiv">
+	<label for="volumeControl" style="text-align: left;">VOLUME</label>
+	<input type="range" id="volumeControl" min="0.1" max="2" value="1" step="0.1">
+</div>
+
+<div style="float:left; padding:20px;">
+	<p>Use the arrow keys &#8592; &#8593; &#8595; &#8594;<br/>
+			or wasd<br/>
+			or the mouse <br/>
+			to move the ball</p>
+	<p>&nbsp;</p>
+	<p>you can do this whether or not<br/>
+			the ball is moving on its own</p>
+	<p>&nbsp;</p>
+	<button data-playing="false" role="switch" aria-checked="false" id="ballStartStop">
+			<span id="ballStartStopLabel">Play/Pause Ball</span>
+	</button>
+	<p>&nbsp;</p>
+	<p>Angle: <span id="angleReadout">45</span></p>
+	<input type="range" id="ballAngleSlider" min="0" max="2" value="1" step="0.1" style="width:200px;">
+	<p>Size: <span id="sizeReadout">1</span></p>
+	<input type="range" id="ballSizeSlider" min="0.5" max="2" value="1" step="0.1" style="width:200px;">
+	<p>Speed: <span id="speedReadout">2</span></p>
+	<input type="range" id="ballSpeedSlider" min="0.5" max="10" value="2" step="0.1" style="width:200px;">
+	<p>&nbsp;</p>
+	<button id="resetButton" role="switch" aria-checked="false"><span>Reset</span></button>
+	<p>&nbsp;</p>
+	<p><a href="index.html">Want to hear the music version?</a></p>
+</div>
+
+<div>
+	<canvas id="canvas" width="800" height="600"></canvas>
+</div>
+
+<script type="text/javascript">
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  const audioContext = new AudioContext();
+
+  const audioElementCorner1a = document.getElementById('office01a');
+	const audioElementCorner1b = document.getElementById('office01b');
+	const audioElementCorner2a = document.getElementById('office02a');
+	const audioElementCorner2b = document.getElementById('office02b');
+	const audioElementCorner3 = document.getElementById('office03');
+	const audioElementCorner4 = document.getElementById('office04');
+
+	const trackCorner1a = audioContext.createMediaElementSource(audioElementCorner1a);
+	const trackCorner1b = audioContext.createMediaElementSource(audioElementCorner1b);
+	const trackCorner2a = audioContext.createMediaElementSource(audioElementCorner2a);
+	const trackCorner2b = audioContext.createMediaElementSource(audioElementCorner2b);
+	const trackCorner3 = audioContext.createMediaElementSource(audioElementCorner3);
+	const trackCorner4 = audioContext.createMediaElementSource(audioElementCorner4);
+
+
+	const gainNodeCorner1a = audioContext.createGain();
+	const gainNodeCorner1b = audioContext.createGain();
+	const gainNodeCorner2a = audioContext.createGain();
+	const gainNodeCorner2b = audioContext.createGain();
+	const gainNodeCorner3 = audioContext.createGain();
+	const gainNodeCorner4 = audioContext.createGain();
+
+  trackCorner1a.connect(gainNodeCorner1a).connect(audioContext.destination);
+	trackCorner1b.connect(gainNodeCorner1b).connect(audioContext.destination);
+	trackCorner2a.connect(gainNodeCorner2a).connect(audioContext.destination);
+	trackCorner2b.connect(gainNodeCorner2b).connect(audioContext.destination);
+	trackCorner3.connect(gainNodeCorner3).connect(audioContext.destination);
+	trackCorner4.connect(gainNodeCorner4).connect(audioContext.destination);
+
+	const playButton = document.getElementById('playPauseAudio');
+
+	playButton.addEventListener('click', function () {
+        let playButtonText = document.querySelector('#playPauseLabel');
+        if (audioContext.state === 'suspended'){
+        	audioContext.resume();
+        }
+        if (this.dataset.playing === 'false'){
+			audioElementCorner1a.play();
+			audioElementCorner1b.play();
+			audioElementCorner2a.play();
+			audioElementCorner2b.play();
+			audioElementCorner3.play();
+			audioElementCorner4.play();
+        	this.dataset.playing = 'true';
+        	playButtonText.innerHTML='Disable Office Sound'
+        } else if (this.dataset.playing === 'true'){
+			audioElementCorner1a.pause();
+			audioElementCorner1b.pause();
+			audioElementCorner2a.pause();
+			audioElementCorner2b.pause();
+			audioElementCorner3.pause();
+			audioElementCorner4.pause();
+			this.dataset.playing = 'false'
+            playButtonText.innerHTML = 'Enable Office Sound'
+        }
+    }, false);
+	const volumeControl = document.getElementById('volumeControl');
+	let overallVolume = 1;
+
+	volumeControl.addEventListener('input', function () {
+			overallVolume = this.value;
+	}, false);
+
+	const canvas = document.getElementById('canvas');
+	const ctx = canvas.getContext('2d');
+	let ballX = canvas.width / 2 + 300;
+	let ballY = canvas.height - 200;
+	let ballSpeedX = 2;
+	let ballSpeedY = -2;
+	const INITIAL_BALL_RADIUS = 35;
+	let ballRadius = INITIAL_BALL_RADIUS;
+	let angleReadout = document.getElementById('angleReadout');
+	let sizeReadout = document.getElementById('sizeReadout');
+	let speedReadout = document.getElementById('speedReadout');
+	let angleAdjustment = 1; // 45 degrees
+
+	drawBall();
+
+	function drawBall() {
+			ctx.beginPath();
+			ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+			ctx.fillStyle = "0095DD";
+			ctx.fill();
+			ctx.closePath();
+	}
+
+	function updateBall() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		drawBall();
+
+		// Update ball position based on user input
+		if (rightPressed) {
+				ballX += 5;
+		} else if (leftPressed) {
+				ballX -= 5;
+		}
+		if (upPressed) {
+				ballY -= 5;
+		} else if (downPressed) {
+				ballY += 5;
+		}
+
+		// Handle ball collision with canvas boundaries
+		if (ballX + ballSpeedX > canvas.width - ballRadius) {
+				ballX = canvas.width - ballRadius;
+				ballSpeedX = -ballSpeedX;
+		} else if (ballX + ballSpeedX < ballRadius) {
+				ballX = ballRadius;
+				ballSpeedX = -ballSpeedX;
+		}
+		if (ballY + ballSpeedY > canvas.height - ballRadius) {
+				ballY = canvas.height - ballRadius;
+				ballSpeedY = -ballSpeedY;
+		} else if (ballY + ballSpeedY < ballRadius) {
+				ballY = ballRadius;
+				ballSpeedY = -ballSpeedY;
+		}
+
+		// Update ball position based on angle and speed
+		if (playBallButton.dataset.playing === 'true') {
+				ballX += ballSpeedX * angleAdjustment;
+				ballY += ballSpeedY * (2 - Math.abs(angleAdjustment));
+		}
+
+		// Update audio levels based on ball position
+		const verticalProportion = (canvas.height - ballY) / canvas.height;
+		const horizontalProportion = (canvas.width - ballX) / canvas.width;
+
+		gainNodeCorner1a.gain.value=(overallVolume*verticalProportion*(1-horizontalProportion));
+		gainNodeCorner1b.gain.value=overallVolume*(1-horizontalProportion);
+		gainNodeCorner2a.gain.value=(overallVolume*(1-verticalProportion)*(1-horizontalProportion));
+		gainNodeCorner2b.gain.value=overallVolume*(1-verticalProportion);
+		gainNodeCorner3.gain.value=(overallVolume*(1-verticalProportion)*horizontalProportion);
+		gainNodeCorner4.gain.value=(overallVolume*verticalProportion*horizontalProportion) * 0.8; //clacking is too much
+
+		// Update readouts
+		angleReadout.textContent = (angleAdjustment * 45).toFixed(1);
+		sizeReadout.textContent = (ballRadius / INITIAL_BALL_RADIUS).toFixed(1);
+		speedReadout.textContent = (Math.abs(ballSpeedX)/2);
+	}
+
+	let updateInterval = setInterval(updateBall, 10);
+
+	const ballAngleSlider = document.getElementById('ballAngleSlider');
+	ballAngleSlider.addEventListener('input', function () {
+			angleAdjustment = this.value;
+	}, false);
+
+	const ballSizeSlider = document.getElementById('ballSizeSlider');
+	ballSizeSlider.addEventListener('input', function () {
+			ballRadius = this.value * INITIAL_BALL_RADIUS;
+	}, false);
+
+	const ballSpeedSlider = document.getElementById('ballSpeedSlider');
+	ballSpeedSlider.addEventListener('input', function () {
+			ballSpeedX = (this.value) * Math.sign(ballSpeedX);
+			ballSpeedY = (this.value) * Math.sign(ballSpeedY);
+	});
+
+	const ballStartStopLabel = document.getElementById('ballStartStopLabel');
+	const playBallButton = document.getElementById('ballStartStop');
+	playBallButton.addEventListener('click', function () {
+			if (this.dataset.playing === 'false') {
+					ballStartStopLabel.textContent = 'Ball is Playing';
+					this.dataset.playing = 'true';
+			} else if (this.dataset.playing === 'true') {
+					ballStartStopLabel.textContent = 'Ball is Paused';
+					this.dataset.playing = 'false';
+			}
+	}, false);
+
+	//let's allow the user to explore
+	let rightPressed = false;
+	let leftPressed = false;
+	let upPressed = false;
+	let downPressed = false;
+
+	function keyDownHandler(event) {
+			if (event.key === "Right" || event.key === "ArrowRight") {
+					rightPressed = true;
+			} else if (event.key === "Left" || event.key === "ArrowLeft") {
+					leftPressed = true;
+			} else if (event.key === "Up" || event.key === "ArrowUp") {
+					upPressed = true;
+			} else if (event.key === "Down" || event.key === "ArrowDown") {
+					downPressed = true;
+			}
+	}
+
+	function keyUpHandler(event) {
+			if (event.key === "Right" || event.key === "ArrowRight") {
+					rightPressed = false;
+			} else if (event.key === "Left" || event.key === "ArrowLeft") {
+					leftPressed = false;
+			} else if (event.key === "Up" || event.key === "ArrowUp") {
+					upPressed = false;
+			} else if (event.key === "Down" || event.key === "ArrowDown") {
+					downPressed = false;
+			}
+	}
+
+	document.addEventListener("keydown", keyDownHandler, false);
+	document.addEventListener("keyup", keyUpHandler, false);
+
+	document.addEventListener("mousemove", mouseMoveHandler, false);
+
+	canvas.addEventListener("mousedown", mouseDownHandler, false);
+	document.addEventListener("mouseup", mouseUpHandler, false);
+
+	let ballIsGrabbed = false;
+
+	function mouseDownHandler(event) {
+			const relativeX = event.clientX - canvas.offsetLeft;
+			const relativeY = event.clientY - canvas.offsetTop;
+			if (relativeX < ballX + ballRadius && relativeX > ballX - ballRadius &&
+					relativeY < ballY + ballRadius && relativeY > ballY - ballRadius) {
+					ballIsGrabbed = true;
+			} else {
+					ballIsGrabbed = false;
+			}
+	}
+
+	function mouseUpHandler(event) {
+			if (!ballIsGrabbed) {
+					return;
+			}
+			event.preventDefault();
+			event.stopPropagation();
+			ballIsGrabbed = false;
+	}
+
+	function mouseMoveHandler(event) {
+			const relativeX = event.clientX - canvas.offsetLeft;
+			const relativeY = event.clientY - canvas.offsetTop;
+			if (ballIsGrabbed && relativeX > 0 && relativeX < canvas.width &&
+					relativeY > 0 && relativeY < canvas.height) {
+					ballX = relativeX;
+					ballY = relativeY;
+			}
+	}
+
+	const resetButton = document.getElementById('resetButton');
+	resetButton.addEventListener('click', resetBall);
+
+	function resetBall() {
+			ballSpeedX = ballSpeedX > 1 ? 2 : -2;
+			ballSpeedY = ballSpeedY > 1 ? 2 : -2;
+			ballAngleSlider.value = 1;
+			angleAdjustment = 1;
+			ballSizeSlider.value = 1;
+			ballRadius = INITIAL_BALL_RADIUS;
+			ballSpeedSlider.value = 1;
+	}
+</script>
+
+</body>
+</html>
