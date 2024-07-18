@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <title>Soundscape One A</title>
     <style>
@@ -31,10 +32,22 @@
         a:visited {
             color: blue;
         }
+        
+        .canvasBox {
+            max-width: 90%;
+        }
+        @media (max-width: 525px) {
+            #volumeDiv {
+                width: 100px;
+                height: 30px;
+                transform-origin: 50px 50px;
+            }
+        }
+        
     </style>
 </head>
 <body>
-
+    <div class="controls" >
 <div style="margin-bottom: 25px">
     <audio src="music/2021_02_23_drumTrance_snapShot01_ambienceAndBass.m4a" loop="True" id="padAudio"></audio>
     <audio src="music/2021_02_23_drumTrance_melody01a_pianoWanderings_excerpt01.m4a" loop="True" id="pianoAudio"></audio>
@@ -45,12 +58,13 @@
     </button>
 </div>
 
+<div>
 <div style="float:left; padding:20px;" id="volumeDiv">
     <label for="volumeControl" style="text-align: left;">VOLUME</label>
     <input type="range" id="volumeControl" min="0.1" max="2" value="1" step="0.1">
 </div>
 
-<div style="float:left; padding:20px;">
+<div style="float:left; padding:20px;" class="instructionsAndControls">
     <p>Use the arrow keys &#8592; &#8593; &#8595; &#8594;<br/>
         or wasd<br/>
         or the mouse <br/>
@@ -77,9 +91,11 @@
     <p>or the <a href="musing_in_two_voices.html">original, simpler two voice version?</a></p>
 
 </div>
+</div>
+</div>
 
-<div>
-    <canvas id="canvas" width="800" height="600"></canvas>
+<div class="canvasContainer">
+    <canvas class="canvasBox" id="canvas" width="800" height="600"></canvas>
 </div>
 
 <script type="text/javascript">
